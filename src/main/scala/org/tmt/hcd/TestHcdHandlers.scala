@@ -24,7 +24,7 @@ class TestHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContex
 
   override def onSubmit(runId: Id, controlCommand: ControlCommand): CommandResponse.SubmitResponse = Completed(runId)
 
-  override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {}
+  override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = ()
 
   override def onDiagnosticMode(startTime: UTCTime, hint: String): Unit = {}
 

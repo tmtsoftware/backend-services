@@ -15,7 +15,7 @@ import scala.util.control.NonFatal
 
 object BackendService extends EswCommandApp[TSServicesCommands] {
   override def appName: String  = getClass.getSimpleName.dropRight(1) // remove $ from class name
-  override def progName: String = "tmt-backend"
+  override def progName: String = "backend-testkit"
 
   private lazy val eswTestKit: EswTestKit = new EswTestKit() {}
   import eswTestKit._

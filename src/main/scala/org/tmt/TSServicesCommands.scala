@@ -8,11 +8,12 @@ import caseapp.{ExtraName, HelpMessage, _}
 import csw.testkit.scaladsl.CSWService.{AlarmServer, ConfigServer, EventServer, LocationServer}
 import esw.ocs.testkit.Service
 import esw.ocs.testkit.Service.Gateway
+import org.tmt.utils.IOUtils
 
 sealed trait TSServicesCommands
 object TSServicesCommands {
 
-  private lazy val commandRolesPath = Paths.get("tmt-backend/src/main/resources/commandRoles.conf").toAbsolutePath
+  private lazy val commandRolesPath = IOUtils.writeResourceToFile("commandRoles.conf")
 
   implicit val serviceParser: SimpleArgParser[Service] = {
     SimpleArgParser.from[Service]("service") {
