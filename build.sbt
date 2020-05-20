@@ -4,6 +4,7 @@ inThisBuild(
     version := "0.1.0-SNAPSHOT",
     organization := "com.github.tmtsoftware.backend-testkit",
     organizationName := "ThoughtWorks",
+    name := "backend-testkit",
     scalafmtOnCompile := true,
     resolvers ++= Seq(
       "jitpack" at "https://jitpack.io",
