@@ -1,0 +1,10 @@
+build
+.idea/*
+.vscode/*
+yarn.lock
+*.iml
+project/project/*
+*/**/target
+target
+.metals
+.bloop
