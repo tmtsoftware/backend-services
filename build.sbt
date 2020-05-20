@@ -1,7 +1,6 @@
 import sbt.Keys.{libraryDependencies, resolvers}
 
 name := "backend-testkit"
-libraryDependencies ++= Seq(ESW.`esw-testkit`)
 
 inThisBuild(
   Seq(
@@ -27,3 +26,8 @@ inThisBuild(
     )
   )
 )
+
+lazy val `backend-testkit` = (project in file("backend-testkit"))
+  .settings(
+    libraryDependencies ++= Seq(ESW.`esw-testkit`)
+  )
