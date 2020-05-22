@@ -7,10 +7,7 @@ inThisBuild(
     organization := "com.github.tmtsoftware.backend-testkit",
     organizationName := "ThoughtWorks",
     scalafmtOnCompile := true,
-    resolvers ++= Seq(
-      "jitpack" at "https://jitpack.io",
-      Resolver.bintrayRepo("lonelyplanet", "maven")
-    ),
+    resolvers ++= Seq("jitpack" at "https://jitpack.io"),
     fork := true,
     scalacOptions ++= Seq(
       "-encoding",
