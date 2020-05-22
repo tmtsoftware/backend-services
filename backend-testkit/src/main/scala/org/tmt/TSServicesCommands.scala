@@ -1,6 +1,6 @@
 package org.tmt
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.Path
 
 import caseapp.core.Error.UnrecognizedArgument
 import caseapp.core.argparser.SimpleArgParser

@@ -13,7 +13,6 @@ inThisBuild(
       "jitpack" at "https://jitpack.io",
       Resolver.bintrayRepo("lonelyplanet", "maven")
     ),
-    dependencyOverrides += AkkaHttp.`akka-http-spray-json`,
     fork := true,
     scalacOptions ++= Seq(
       "-encoding",
