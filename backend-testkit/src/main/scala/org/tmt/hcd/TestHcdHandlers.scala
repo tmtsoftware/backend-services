@@ -17,7 +17,7 @@ class TestHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContex
 
   override def initialize(): Future[Unit] = Future.unit
 
-  override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = ???
+  override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {}
 
   override def validateCommand(runId: Id, controlCommand: ControlCommand): CommandResponse.ValidateCommandResponse =
     Accepted(runId)
@@ -28,11 +28,11 @@ class TestHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContex
 
   override def onDiagnosticMode(startTime: UTCTime, hint: String): Unit = {}
 
-  override def onOperationsMode(): Unit = ???
+  override def onOperationsMode(): Unit = {}
 
-  override def onShutdown(): Future[Unit] = ???
+  override def onShutdown(): Future[Unit] = Future.unit
 
-  override def onGoOffline(): Unit = ???
+  override def onGoOffline(): Unit = {}
 
-  override def onGoOnline(): Unit = ???
+  override def onGoOnline(): Unit = {}
 }
