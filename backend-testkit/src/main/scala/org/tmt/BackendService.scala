@@ -10,7 +10,6 @@ import esw.http.core.commons.EswCommandApp
 import esw.ocs.testkit.Service.{AAS, Gateway}
 import esw.ocs.testkit.{EswTestKit, Service}
 import org.tmt.TSServicesCommands._
-import org.tmt.embedded_keycloak.impl.StopHandle
 
 import scala.util.control.NonFatal
 
@@ -40,7 +39,7 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
     frameworkTestKit.start(Service.convertToCsw(services): _*)
     services.foreach {
       case AAS     => startKeycloak()
-      case Gateway => spawnGateway(commandRoles)
+      case Gateway => spawnGateway(authEnabled = true, commandRoles)
       case _       => ()
     }
   }
