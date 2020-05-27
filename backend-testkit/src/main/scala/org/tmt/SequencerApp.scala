@@ -11,7 +11,14 @@ object SequencerApp extends EswCommandApp[TSSequencerCommands] {
 
   override def run(options: TSSequencerCommands, remainingArgs: RemainingArgs): Unit =
     options match {
-      case Start(subsystem: Subsystem, observingMode: String) =>
+      case Start(subsystem: Subsystem, observingMode: String) => {
+        println("starting sequencer")
         eswTestKit.spawnSequencerInSimulation(subsystem, observingMode)
+      }
     }
+
+  override def exit(code: Int): Nothing = {
+    eswTestKit.shutdownAllSequencers()
+    super.exit(code)
+  }
 }
