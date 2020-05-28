@@ -4,10 +4,12 @@ import java.nio.file.Path
 
 import akka.actor.CoordinatedShutdown
 import caseapp.RemainingArgs
+import com.typesafe.config.ConfigFactory
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
+import csw.testkit.scaladsl.CSWService.AlarmServer
 import esw.http.core.commons.EswCommandApp
-import esw.ocs.testkit.Service.{AAS, Gateway}
+import esw.ocs.testkit.Service.{AAS, Gateway, WrappedCSWService}
 import esw.ocs.testkit.{EswTestKit, Service}
 import org.tmt.TSServicesCommands._
 
@@ -22,25 +24,32 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
 
   override def run(options: TSServicesCommands, remainingArgs: RemainingArgs): Unit =
     options match {
-      case Start(services, commandRoles) => run(services, commandRoles)
+      case Start(services, commandRoles, alarmConf) => run(services, commandRoles, alarmConf)
     }
 
-  private def run(services: List[Service], commandRoles: Path): Unit =
+  private def run(services: List[Service], commandRoles: Path, alarmConf: String): Unit =
     try {
       LoggingSystemFactory.start(progName, "0.1.0-SNAPSHOT", Networks().hostname, actorSystem)
-      startServices(services, commandRoles)
+      startServices(services, commandRoles, alarmConf)
       CoordinatedShutdown(actorSystem).addJvmShutdownHook(shutdown())
     }
     catch {
       case NonFatal(e) => shutdown(); throw e
     }
 
-  private def startServices(services: List[Service], commandRoles: Path): Unit = {
+  private def startServices(services: List[Service], commandRoles: Path, alarmConf: String): Unit = {
     frameworkTestKit.start(Service.convertToCsw(services): _*)
+    import frameworkTestKit.frameworkWiring.alarmServiceFactory
+
     services.foreach {
       case AAS     => startKeycloak()
-      case Gateway => spawnGateway(authEnabled = true, commandRoles)
-      case _       => ()
+      case Gateway => spawnGateway(services.contains(AAS), commandRoles)
+      case WrappedCSWService(AlarmServer) => {
+        val config            = ConfigFactory.parseResources(alarmConf)
+        val alarmAdminService = alarmServiceFactory.makeAdminApi(locationService)
+        alarmAdminService.initAlarms(config, reset = true).futureValue
+      }
+      case _ => ()
     }
   }
 

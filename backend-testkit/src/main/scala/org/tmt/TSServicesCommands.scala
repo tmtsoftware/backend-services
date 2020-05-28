@@ -34,6 +34,9 @@ object TSServicesCommands {
       services: List[Service],
       @HelpMessage("path to command role from root directory")
       @ExtraName("r")
-      commandRoles: Path = commandRolesPath
+      commandRoles: Path = commandRolesPath,
+      @HelpMessage("name of alarm config key")
+      @ExtraName("a")
+      alarmConf: String = "alarm_key.conf"
   ) extends TSServicesCommands
 }
