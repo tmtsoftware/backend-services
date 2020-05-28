@@ -40,7 +40,7 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
 
       eswTestKit.beforeAll()
       if (services.contains(WrappedCSWService(AlarmServer))) initDefaultAlarms()
-      if (services.contains(Gateway)) spawnGateway(services.contains(AAS), commandRoles)
+      if (services.contains(Gateway)) spawnGateway(authEnabled = true, commandRoles)
       CoordinatedShutdown(actorSystem).addJvmShutdownHook(eswTestKit.afterAll())
     }
     catch {
