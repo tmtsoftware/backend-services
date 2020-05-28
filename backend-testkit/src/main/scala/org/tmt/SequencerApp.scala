@@ -11,9 +11,7 @@ object SequencerApp extends EswCommandApp[TSSequencerCommands] {
 
   override def run(options: TSSequencerCommands, remainingArgs: RemainingArgs): Unit =
     options match {
-      case Start(subsystem: Subsystem, observingMode: String) => {
-        eswTestKit.spawnSequencerInSimulation(subsystem, observingMode)
-      }
+      case Start(subsystem: Subsystem, observingMode: String) => eswTestKit.spawnSequencerInSimulation(subsystem, observingMode)
     }
 
   override def exit(code: Int): Nothing = {

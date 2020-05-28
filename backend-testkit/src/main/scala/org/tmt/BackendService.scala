@@ -19,39 +19,32 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
   override def appName: String  = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def progName: String = "backend-testkit"
 
-  private lazy val eswTestKit: EswTestKit = new EswTestKit() {}
-  import eswTestKit._
-
   override def run(options: TSServicesCommands, remainingArgs: RemainingArgs): Unit =
     options match {
       case Start(services, commandRoles, alarmConf) => run(services, commandRoles, alarmConf)
     }
 
-  private def run(services: List[Service], commandRoles: Path, alarmConf: String): Unit =
+  private def run(services: List[Service], commandRoles: Path, alarmConf: String): Unit = {
+    val servicesWithoutGateway = services.filterNot(_ == Gateway)
+    val eswTestKit: EswTestKit = new EswTestKit(servicesWithoutGateway: _*) {}
     try {
+      import eswTestKit._
       LoggingSystemFactory.start(progName, "0.1.0-SNAPSHOT", Networks().hostname, actorSystem)
-      startServices(services, commandRoles, alarmConf)
-      CoordinatedShutdown(actorSystem).addJvmShutdownHook(shutdown())
-    }
-    catch {
-      case NonFatal(e) => shutdown(); throw e
-    }
+      import frameworkTestKit.frameworkWiring.alarmServiceFactory
 
-  private def startServices(services: List[Service], commandRoles: Path, alarmConf: String): Unit = {
-    frameworkTestKit.start(Service.convertToCsw(services): _*)
-    import frameworkTestKit.frameworkWiring.alarmServiceFactory
-
-    services.foreach {
-      case AAS     => startKeycloak()
-      case Gateway => spawnGateway(services.contains(AAS), commandRoles)
-      case WrappedCSWService(AlarmServer) => {
+      def initDefaultAlarms() = {
         val config            = ConfigFactory.parseResources(alarmConf)
         val alarmAdminService = alarmServiceFactory.makeAdminApi(locationService)
         alarmAdminService.initAlarms(config, reset = true).futureValue
       }
-      case _ => ()
+
+      eswTestKit.beforeAll()
+      if (services.contains(WrappedCSWService(AlarmServer))) initDefaultAlarms()
+      if (services.contains(Gateway)) spawnGateway(services.contains(AAS), commandRoles)
+      CoordinatedShutdown(actorSystem).addJvmShutdownHook(eswTestKit.afterAll())
+    }
+    catch {
+      case NonFatal(e) => eswTestKit.afterAll(); throw e
     }
   }
-
-  private def shutdown(): Unit = eswTestKit.afterAll()
 }

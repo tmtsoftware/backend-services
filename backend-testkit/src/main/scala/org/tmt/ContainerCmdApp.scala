@@ -6,13 +6,9 @@ import org.tmt.utils.IOUtils
 
 object ContainerCmdApp extends App {
 
-  private def filterConfPath(commandArgs: Array[String]) = {
-    commandArgs.map {
-      case arg: String if arg.contains(".conf") =>
-        IOUtils.writeResourceToFile(arg).toString
-      case x => x
-    }
+  private val updatedArgs = args.collect {
+    case arg: String if arg.contains(".conf") => IOUtils.writeResourceToFile(arg).toString
   }
 
-  ContainerCmd.start("ContainerCmdApp", ESW, filterConfPath(args))
+  ContainerCmd.start("ContainerCmdApp", ESW, updatedArgs)
 }

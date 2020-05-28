@@ -15,7 +15,7 @@ object TSServicesCommands {
 
   private lazy val commandRolesPath = IOUtils.writeResourceToFile("commandRoles.conf")
 
-  implicit val serviceParser: SimpleArgParser[Service] = {
+  implicit val serviceParser: SimpleArgParser[Service] =
     SimpleArgParser.from[Service]("service") {
       case "Location" => Right(LocationServer)
       case "Event"    => Right(EventServer)
@@ -25,7 +25,6 @@ object TSServicesCommands {
       case "AAS"      => Right(AAS)
       case unknown    => Left(UnrecognizedArgument(unknown))
     }
-  }
 
   @CommandName("start")
   final case class Start(
