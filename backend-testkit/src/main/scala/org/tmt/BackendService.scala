@@ -9,7 +9,8 @@ import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
 import csw.testkit.scaladsl.CSWService.AlarmServer
 import esw.http.core.commons.EswCommandApp
-import esw.ocs.testkit.Service.{AAS, Gateway, WrappedCSWService}
+import esw.stubs.GatewayStub
+import esw.ocs.testkit.Service.{Gateway, WrappedCSWService}
 import esw.ocs.testkit.{EswTestKit, Service}
 import org.tmt.TSServicesCommands._
 
@@ -27,6 +28,14 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
   private def run(services: List[Service], commandRoles: Path, alarmConf: String): Unit = {
     val servicesWithoutGateway = services.filterNot(_ == Gateway)
     val eswTestKit: EswTestKit = new EswTestKit(servicesWithoutGateway: _*) {}
+
+    var gatewayWiring: Option[GatewayStub] = None
+
+    def shutdown(): Unit = {
+      gatewayWiring.foreach(_.shutdownGateway())
+      eswTestKit.afterAll()
+    }
+
     try {
       import eswTestKit._
       LoggingSystemFactory.start(progName, "0.1.0-SNAPSHOT", Networks().hostname, actorSystem)
@@ -40,11 +49,16 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
 
       eswTestKit.beforeAll()
       if (services.contains(WrappedCSWService(AlarmServer))) initDefaultAlarms()
-      if (services.contains(Gateway)) spawnGateway(authEnabled = true, commandRoles)
-      CoordinatedShutdown(actorSystem).addJvmShutdownHook(eswTestKit.afterAll())
+      if (services.contains(Gateway)) {
+        val gateway = new GatewayStub(locationService, actorSystem)
+        gatewayWiring = Some(gateway)
+        gateway.spawnMockGateway(authEnabled = true, commandRoles)
+      }
+      CoordinatedShutdown(actorSystem).addJvmShutdownHook(shutdown())
     }
     catch {
-      case NonFatal(e) => eswTestKit.afterAll(); throw e
+      case NonFatal(e) => shutdown(); throw e
     }
   }
+
 }

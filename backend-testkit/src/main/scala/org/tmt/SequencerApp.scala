@@ -3,6 +3,7 @@ package org.tmt
 import caseapp.RemainingArgs
 import csw.prefix.models.Subsystem
 import esw.http.core.commons.EswCommandApp
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import org.tmt.TSSequencerCommands._
 
@@ -11,7 +12,8 @@ object SequencerApp extends EswCommandApp[TSSequencerCommands] {
 
   override def run(options: TSSequencerCommands, remainingArgs: RemainingArgs): Unit =
     options match {
-      case Start(subsystem: Subsystem, observingMode: String) => eswTestKit.spawnSequencerInSimulation(subsystem, observingMode)
+      case Start(subsystem: Subsystem, observingMode: String) =>
+        eswTestKit.spawnSequencerInSimulation(subsystem, ObsMode(observingMode))
     }
 
   override def exit(code: Int): Nothing = {
