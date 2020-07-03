@@ -33,7 +33,7 @@ class GatewayStub(val locationService: LocationService, _actorSystem: ActorSyste
   //command service mocks
   private lazy val _resolver: Resolver            = mock[Resolver]
   private lazy val commandService: CommandService = new CommandServiceStubImpl(locationService, actorSystem)
-  private lazy val sequencerApi: SequencerApi     = new SequencerServiceStubImpl
+  private lazy val sequencerApi: SequencerApi     = new SequencerServiceStubImpl(locationService, actorSystem)
 
   //alarm service mocks
   lazy val _alarmApi: AlarmApi = new AlarmStubImpl()
