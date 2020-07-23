@@ -21,13 +21,7 @@ import scala.concurrent.duration.DurationLong
 
 class EventStubImpl(_actorSystem: ActorSystem[SpawnProtocol.Command]) extends EventApi with BaseTestSuite {
 
-  lazy val validObserveEvent: Event = ObserveEvent(
-    Id("event1"),
-    Prefix(CSW, "ncc.trombone"),
-    EventName("offline"),
-    UTCTime(Instant.ofEpochMilli(1577836800000L)), // 1-1-2020:00.00.00
-    Set.empty
-  )
+  lazy val validObserveEvent: Event = ObserveEvent(Prefix(CSW, "ncc.trombone"), EventName("offline"))
 
   implicit def actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
 
