@@ -10,7 +10,7 @@ import csw.network.utils.Networks
 import csw.testkit.scaladsl.CSWService.AlarmServer
 import esw.http.core.commons.EswCommandApp
 import esw.stubs.GatewayStub
-import esw.ocs.testkit.Service.{Gateway, WrappedCSWService}
+import esw.ocs.testkit.Service.{AAS, Gateway, WrappedCSWService}
 import esw.ocs.testkit.{EswTestKit, Service}
 import org.tmt.TSServicesCommands._
 
@@ -52,7 +52,7 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
       if (services.contains(Gateway)) {
         val gateway = new GatewayStub(locationService, actorSystem)
         gatewayWiring = Some(gateway)
-        gateway.spawnMockGateway(authEnabled = true, commandRoles)
+        gateway.spawnMockGateway(services.contains(AAS), commandRoles)
       }
       CoordinatedShutdown(actorSystem).addJvmShutdownHook(shutdown())
     }
