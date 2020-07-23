@@ -1,7 +1,5 @@
 package esw.stubs
 
-import java.time.Instant
-
 import akka.Done
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.stream.scaladsl.Source
@@ -9,7 +7,6 @@ import csw.params.core.models.Id
 import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
 import csw.prefix.models.Subsystem.CSW
 import csw.prefix.models.{Prefix, Subsystem}
-import csw.time.core.models.UTCTime
 import esw.gateway.api.EventApi
 import esw.gateway.api.protocol.{EmptyEventKeys, EventServerUnavailable, InvalidMaxFrequency}
 import esw.gateway.impl.SourceExtensions.RichSource
@@ -26,7 +23,7 @@ class EventStubImpl(_actorSystem: ActorSystem[SpawnProtocol.Command]) extends Ev
   implicit def actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
 
   override def publish(event: Event): Future[Done] = {
-    if (event.eventId == "InvalidEvent") Future.failed(new EventServerUnavailable)
+    if (event.eventId == Id("InvalidEvent")) Future.failed(new EventServerUnavailable)
     Future.successful(Done)
   }
 
