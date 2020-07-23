@@ -39,7 +39,7 @@ class GatewayStub(val locationService: LocationService, _actorSystem: ActorSyste
   lazy val _alarmApi: AlarmApi = new AlarmStubImpl()
 
   //event service mocks
-  lazy val _eventApi: EventApi = mock[EventApi]
+  lazy val _eventApi: EventApi = new EventStubImpl(actorSystem)
 
   lazy val _loggingApi: LoggingApi = mock[LoggingApi]
   lazy val _adminApi: AdminService = mock[AdminService]
