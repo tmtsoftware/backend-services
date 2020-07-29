@@ -5,11 +5,16 @@ import java.nio.file.Path
 import akka.actor.CoordinatedShutdown
 import caseapp.RemainingArgs
 import com.typesafe.config.ConfigFactory
+import csw.config.api.scaladsl.ConfigService
+import csw.config.client.scaladsl.ConfigClientFactory
+import csw.config.server.ServerWiring
+import csw.config.server.svn.SvnConfigServiceFactory
+import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
-import csw.testkit.scaladsl.CSWService.AlarmServer
+import csw.testkit.scaladsl.CSWService.{AlarmServer, ConfigServer}
 import esw.http.core.commons.EswCommandApp
-import esw.stubs.GatewayStub
+import esw.stubs.{ConfigStubImpl, GatewayStub}
 import esw.ocs.testkit.Service.{AAS, Gateway, WrappedCSWService}
 import esw.ocs.testkit.{EswTestKit, Service}
 import org.tmt.TSServicesCommands._
@@ -26,8 +31,8 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
     }
 
   private def run(services: List[Service], commandRoles: Path, alarmConf: String): Unit = {
-    val servicesWithoutGateway = services.filterNot(_ == Gateway)
-    val eswTestKit: EswTestKit = new EswTestKit(servicesWithoutGateway: _*) {}
+    val servicesWithoutGatewayAndConfig = services.filterNot(x => x == Gateway || x == WrappedCSWService(ConfigServer))
+    val eswTestKit: EswTestKit          = new EswTestKit(servicesWithoutGatewayAndConfig: _*) {}
 
     var gatewayWiring: Option[GatewayStub] = None
 
@@ -53,6 +58,11 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
         val gateway = new GatewayStub(locationService, actorSystem)
         gatewayWiring = Some(gateway)
         gateway.spawnMockGateway(services.contains(AAS), commandRoles)
+      }
+
+      if (services.contains(ConfigServer)) {
+        val config = new ConfigStubImpl(actorSystem)
+
       }
       CoordinatedShutdown(actorSystem).addJvmShutdownHook(shutdown())
     }
