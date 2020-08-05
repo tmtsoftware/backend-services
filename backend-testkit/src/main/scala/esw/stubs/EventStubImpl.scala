@@ -3,9 +3,8 @@ package esw.stubs
 import akka.Done
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.stream.scaladsl.Source
-import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
-import csw.prefix.models.Subsystem.CSW
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.params.events.{Event, EventKey}
+import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
 import esw.gateway.impl.SourceExtensions.RichSource
 import esw.ocs.testkit.utils.BaseTestSuite
