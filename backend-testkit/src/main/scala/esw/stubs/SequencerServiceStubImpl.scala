@@ -29,7 +29,7 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
   }
 
   override def startSequence(): Future[SubmitResponse] = {
-    Future.successful(Completed(Id("123")))
+    Future.successful(Started(Id("123")))
   }
 
   override def getSequence: Future[Option[StepList]] = Future.successful(Some(stepList))
@@ -84,6 +84,6 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
     Future.successful(Started(Id()))
 
   override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = {
-    Future.successful(Started(Id()))
+    Future.successful(Started(runId))
   }
 }
