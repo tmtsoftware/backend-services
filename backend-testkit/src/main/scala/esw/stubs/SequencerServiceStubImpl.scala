@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.models.AkkaLocation
 import csw.location.api.scaladsl.LocationService
-import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
+import csw.params.commands.CommandResponse.{Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, SequenceCommand, Setup}
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
@@ -22,14 +22,15 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   override implicit def actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
 
-  private val stepList = StepList(Sequence(Setup(Prefix("CSW.IRIS"), CommandName("command-1"), None)))
+  private val runId: Id = Id("123")
+  private val stepList  = StepList(Sequence(Setup(Prefix("CSW.IRIS"), CommandName("command-1"), None)))
 
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = {
     Future.successful(Ok)
   }
 
   override def startSequence(): Future[SubmitResponse] = {
-    Future.successful(Started(Id("123")))
+    Future.successful(Started(runId))
   }
 
   override def getSequence: Future[Option[StepList]] = Future.successful(Some(stepList))
@@ -76,12 +77,13 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   override def operationsMode(): Future[OperationsModeResponse] = Future.successful(Ok)
 
-  override def submit(sequence: Sequence): Future[SubmitResponse] = Future.successful(Started(Id()))
+  override def submit(sequence: Sequence): Future[SubmitResponse] = Future.successful(Started(runId))
 
-  override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] = ???
+  override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] =
+    Future.successful(Started(runId))
 
   override def query(runId: Id): Future[SubmitResponse] =
-    Future.successful(Started(Id()))
+    Future.successful(Started(runId))
 
   override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = {
     Future.successful(Started(runId))
