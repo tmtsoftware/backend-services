@@ -75,9 +75,9 @@ class GatewayStub(val locationService: LocationService, _actorSystem: ActorSyste
   def spawnMockGateway(authEnabled: Boolean = false, path: file.Path = commandRolesPath): GatewayWiring = {
     val wiring = if (authEnabled) spawnGatewayWithAuthEnabled(path) else spawnGatewayWithAuthDisabled(path)
     gatewayWiring = Some(wiring)
-    wiring.httpService.registeredLazyBinding.futureValue
+    wiring.httpService.startAndRegisterServer().futureValue
     wiring
   }
 
-  def shutdownGateway(): Unit = gatewayWiring.foreach(_.httpService.shutdown(UnknownReason).futureValue)
+  def shutdownGateway(): Unit = gatewayWiring.foreach(_.wiring.cswWiring.actorRuntime.shutdown(UnknownReason).futureValue)
 }

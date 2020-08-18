@@ -9,9 +9,9 @@ import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
 import csw.testkit.scaladsl.CSWService.AlarmServer
 import esw.http.core.commons.EswCommandApp
-import esw.stubs.GatewayStub
 import esw.ocs.testkit.Service.{AAS, Gateway, WrappedCSWService}
 import esw.ocs.testkit.{EswTestKit, Service}
+import esw.stubs.GatewayStub
 import org.tmt.TSServicesCommands._
 
 import scala.util.control.NonFatal
