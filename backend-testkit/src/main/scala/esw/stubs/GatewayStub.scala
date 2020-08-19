@@ -41,8 +41,8 @@ class GatewayStub(val locationService: LocationService, _actorSystem: ActorSyste
   //event service mocks
   lazy val _eventApi: EventApi = new EventStubImpl(actorSystem)
 
-  lazy val _loggingApi: LoggingApi = mock[LoggingApi]
-  lazy val _adminApi: AdminService = mock[AdminService]
+  lazy val _loggingApi: LoggingApi = new LoggerStubImpl()
+  lazy val _adminApi: AdminService = new AdminStubImpl()
 
   when(_resolver.commandService(any[ComponentId]())).thenReturn(Future.successful(commandService))
   when(_resolver.sequencerCommandService(any[ComponentId]())).thenReturn(Future.successful(sequencerApi))

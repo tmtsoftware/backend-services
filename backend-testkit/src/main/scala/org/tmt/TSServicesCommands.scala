@@ -18,12 +18,12 @@ object TSServicesCommands {
   implicit val serviceParser: SimpleArgParser[Service] =
     SimpleArgParser.from[Service]("service") {
       case "Location"         => Right(LocationServer)
+      case "LocationWithAuth" => Right(LocationServerWithAuth)
       case "Event"            => Right(EventServer)
       case "Alarm"            => Right(AlarmServer)
       case "Config"           => Right(ConfigServer)
       case "Gateway"          => Right(Gateway)
       case "AAS"              => Right(AAS)
-      case "LocationWithAuth" => Right(LocationServerWithAuth)
       case unknown            => Left(UnrecognizedArgument(unknown))
     }
 
