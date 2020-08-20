@@ -7,7 +7,7 @@ object Libs {
 }
 
 object ESW {
-  val Version: String = "80ac48cf703"
+  val Version: String = "2e7ae959"
 
   val `esw-testkit` = "com.github.tmtsoftware.esw" %% "esw-testkit" % Version
 }
