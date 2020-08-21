@@ -6,12 +6,11 @@ import java.nio.file.Paths
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.aas.http.SecurityDirectives
-import csw.admin.api.AdminService
 import csw.command.api.scaladsl.CommandService
 import csw.location.api.models.ComponentId
 import csw.location.api.scaladsl.LocationService
 import csw.network.utils.SocketUtils
-import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
+import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
 import esw.gateway.server.GatewayWiring
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.SequencerApi
@@ -42,7 +41,7 @@ class GatewayStub(val locationService: LocationService, _actorSystem: ActorSyste
   lazy val _eventApi: EventApi = new EventStubImpl(actorSystem)
 
   lazy val _loggingApi: LoggingApi = new LoggerStubImpl()
-  lazy val _adminApi: AdminService = new AdminStubImpl()
+  lazy val _adminApi: AdminApi     = new AdminStubImpl()
 
   when(_resolver.commandService(any[ComponentId]())).thenReturn(Future.successful(commandService))
   when(_resolver.sequencerCommandService(any[ComponentId]())).thenReturn(Future.successful(sequencerApi))
@@ -54,7 +53,7 @@ class GatewayStub(val locationService: LocationService, _actorSystem: ActorSyste
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
       override private[esw] lazy val securityDirectives                 = directives
       override lazy val alarmApi: AlarmApi                              = _alarmApi
-      override lazy val adminApi: AdminService                          = _adminApi
+      override lazy val adminApi: AdminApi                              = _adminApi
       override lazy val eventApi: EventApi                              = _eventApi
       override lazy val loggingApi: LoggingApi                          = _loggingApi
       override private[esw] val resolver                                = _resolver
@@ -66,7 +65,7 @@ class GatewayStub(val locationService: LocationService, _actorSystem: ActorSyste
     new GatewayWiring(Some(gatewayPort), true, path) {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
       override lazy val alarmApi: AlarmApi                              = _alarmApi
-      override lazy val adminApi: AdminService                          = _adminApi
+      override lazy val adminApi: AdminApi                              = _adminApi
       override lazy val eventApi: EventApi                              = _eventApi
       override lazy val loggingApi: LoggingApi                          = _loggingApi
       override private[esw] val resolver                                = _resolver
