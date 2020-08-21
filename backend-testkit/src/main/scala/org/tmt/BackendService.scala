@@ -9,9 +9,9 @@ import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
 import csw.testkit.scaladsl.CSWService.AlarmServer
 import esw.http.core.commons.EswCommandApp
-import esw.ocs.testkit.Service.{AAS, Gateway, WrappedCSWService}
+import esw.ocs.testkit.Service.{AAS, Gateway, SequenceManager, WrappedCSWService}
 import esw.ocs.testkit.{EswTestKit, Service}
-import esw.stubs.GatewayStub
+import esw.stubs.{GatewayStub, SequenceManagerStub}
 import org.tmt.TSServicesCommands._
 
 import scala.util.control.NonFatal
@@ -29,10 +29,12 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
     val servicesWithoutGateway = services.filterNot(_ == Gateway)
     val eswTestKit: EswTestKit = new EswTestKit(servicesWithoutGateway: _*) {}
 
-    var gatewayWiring: Option[GatewayStub] = None
+    var gatewayWiring: Option[GatewayStub]                 = None
+    var sequenceManagerWiring: Option[SequenceManagerStub] = None
 
     def shutdown(): Unit = {
       gatewayWiring.foreach(_.shutdownGateway())
+      sequenceManagerWiring.foreach(_.shutdown())
       eswTestKit.afterAll()
     }
 
@@ -53,6 +55,11 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
         val gateway = new GatewayStub(locationService, actorSystem)
         gatewayWiring = Some(gateway)
         gateway.spawnMockGateway(services.contains(AAS), commandRoles)
+      }
+      if (services.contains(SequenceManager)) {
+        val sequenceManagerStub = new SequenceManagerStub(locationService, actorSystem)
+        sequenceManagerWiring = Some(sequenceManagerStub)
+        sequenceManagerStub.spawnMockSm()
       }
       CoordinatedShutdown(actorSystem).addJvmShutdownHook(shutdown())
     }

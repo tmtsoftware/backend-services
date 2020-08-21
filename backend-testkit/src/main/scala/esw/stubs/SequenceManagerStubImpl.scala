@@ -1,55 +1,87 @@
 package esw.stubs
 
+import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.Sequencer
+import csw.location.api.models.ComponentType.{Machine, Sequencer}
 import csw.location.api.scaladsl.LocationService
-import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.Subsystem.{ESW, IRIS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
 import esw.sm.api.SequenceManagerApi
-import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol.{
-  AgentStatusResponse,
-  ConfigureResponse,
-  GetRunningObsModesResponse,
-  ProvisionResponse,
-  RestartSequencerResponse,
-  ShutdownSequenceComponentResponse,
-  ShutdownSequencersResponse,
-  StartSequencerResponse
-}
+import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
+import esw.sm.api.protocol._
+import esw.sm.app.SequenceManagerWiring
+import org.tmt.utils.IOUtils
 
 import scala.concurrent.Future
 
-class SequenceManagerStubImpl(val locationService: LocationService, _actorSystem: ActorSystem[SpawnProtocol.Command])
-    extends LocationUtils
-    with SequenceManagerApi {
+class SequenceManagerStubImpl extends SequenceManagerApi {
+  private lazy val componentId = ComponentId(Prefix(ESW, "darknight"), Sequencer)
+
+  override def configure(obsMode: ObsMode): Future[ConfigureResponse] = {
+    Future.successful(ConfigureResponse.Success(componentId))
+  }
+
+  override def provision(config: ProvisionConfig): Future[ProvisionResponse] = Future.successful(ProvisionResponse.Success)
+
+  override def getRunningObsModes: Future[GetRunningObsModesResponse] =
+    Future.successful(GetRunningObsModesResponse.Success(Set(ObsMode("darknight"))))
+
+  override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
+    Future.successful(StartSequencerResponse.Started(componentId))
+
+  override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
+    Future.successful(RestartSequencerResponse.Success(componentId))
+
+  override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    Future.successful(ShutdownSequencersResponse.Success)
+
+  override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
+    Future.successful(ShutdownSequencersResponse.Success)
+
+  override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    Future.successful(ShutdownSequencersResponse.Success)
+
+  override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] = Future.successful(ShutdownSequencersResponse.Success)
+
+  override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
+    Future.successful(ShutdownSequenceComponentResponse.Success)
+
+  override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
+    Future.successful(ShutdownSequenceComponentResponse.Success)
+
+  override def getAgentStatus: Future[AgentStatusResponse] =
+    Future.successful(
+      AgentStatusResponse.Success(
+        List(
+          AgentStatus(
+            ComponentId(Prefix(IRIS, "Agent"), Machine),
+            List(SequenceComponentStatus(ComponentId(Prefix(IRIS, "IRIS_123"), Machine), None))
+          )
+        ),
+        List(SequenceComponentStatus(ComponentId(Prefix(ESW, "ESW_45"), Machine), None))
+      )
+    )
+}
+
+class SequenceManagerStub(val locationService: LocationService, _actorSystem: ActorSystem[SpawnProtocol.Command])
+    extends LocationUtils {
+  private var seqManagerWiring: Option[SequenceManagerWiring]           = _
   override implicit def actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
 
-  override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
-    Future.successful(ConfigureResponse.Success(ComponentId(Prefix(ESW, "darknight"), Sequencer)))
+  def spawnMockSm(): SequenceManagerWiring = {
+    val wiring = new SequenceManagerWiring(IOUtils.writeResourceToFile("smObsModeConfig.conf"), true, None) {
+      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+      override lazy val sequenceManager: SequenceManagerApi             = new SequenceManagerStubImpl()
+    }
+    seqManagerWiring = Some(wiring)
+    wiring.start()
+    wiring
+  }
 
-  override def provision(config: ProvisionConfig): Future[ProvisionResponse] = ???
-
-  override def getRunningObsModes: Future[GetRunningObsModesResponse] = ???
-
-  override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] = ???
-
-  override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] = ???
-
-  override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] = ???
-
-  override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] = ???
-
-  override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] = ???
-
-  override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] = ???
-
-  override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] = ???
-
-  override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] = ???
-
-  override def getAgentStatus: Future[AgentStatusResponse] = ???
+  def shutdown(): Unit = {
+    seqManagerWiring.foreach(_.shutdown(UnknownReason).futureValue)
+  }
 }
