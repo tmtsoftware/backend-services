@@ -18,9 +18,10 @@ import org.tmt.utils.IOUtils
 import scala.concurrent.Future
 
 class SequenceManagerStubImpl extends SequenceManagerApi {
-  private lazy val componentId = ComponentId(Prefix(ESW, "darknight"), Sequencer)
+
 
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] = {
+    val componentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
     Future.successful(ConfigureResponse.Success(componentId))
   }
 
@@ -30,10 +31,10 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
     Future.successful(GetRunningObsModesResponse.Success(Set(ObsMode("darknight"))))
 
   override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
-    Future.successful(StartSequencerResponse.Started(componentId))
+    Future.successful(StartSequencerResponse.Started(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
 
   override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
-    Future.successful(RestartSequencerResponse.Success(componentId))
+    Future.successful(RestartSequencerResponse.Success(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
 
   override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
     Future.successful(ShutdownSequencersResponse.Success)
