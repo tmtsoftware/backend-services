@@ -19,7 +19,6 @@ import scala.concurrent.Future
 
 class SequenceManagerStubImpl extends SequenceManagerApi {
 
-
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] = {
     val componentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
     Future.successful(ConfigureResponse.Success(componentId))
