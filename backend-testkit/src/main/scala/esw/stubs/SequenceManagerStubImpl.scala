@@ -3,7 +3,7 @@ package esw.stubs
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.{Machine, Sequencer}
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Subsystem.{ESW, IRIS}
 import csw.prefix.models.{Prefix, Subsystem}
@@ -58,10 +58,10 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
         List(
           AgentStatus(
             ComponentId(Prefix(IRIS, "Agent"), Machine),
-            List(SequenceComponentStatus(ComponentId(Prefix(IRIS, "IRIS_123"), Machine), None))
+            List(SequenceComponentStatus(ComponentId(Prefix(IRIS, "IRIS_123"), SequenceComponent), None))
           )
         ),
-        List(SequenceComponentStatus(ComponentId(Prefix(ESW, "ESW_45"), Machine), None))
+        List(SequenceComponentStatus(ComponentId(Prefix(ESW, "ESW_45"), SequenceComponent), None))
       )
     )
 }
