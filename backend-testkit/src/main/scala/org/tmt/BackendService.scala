@@ -3,15 +3,18 @@ package org.tmt
 import java.nio.file.Path
 
 import akka.actor.CoordinatedShutdown
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import caseapp.RemainingArgs
 import com.typesafe.config.ConfigFactory
+import csw.location.api.scaladsl.LocationService
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
 import csw.testkit.scaladsl.CSWService.AlarmServer
-import esw.http.core.commons.EswCommandApp
-import esw.ocs.testkit.Service.{AAS, Gateway, SequenceManager, WrappedCSWService}
+import esw.commons.cli.EswCommandApp
+import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, MachineAgent, SequenceManager, WrappedCSWService}
 import esw.ocs.testkit.{EswTestKit, Service}
-import esw.stubs.{GatewayStub, SequenceManagerStub}
+import esw.stubs.{AgentServiceStub, GatewayStub, SequenceManagerStub}
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.tmt.TSServicesCommands._
 
 import scala.util.control.NonFatal
@@ -26,26 +29,30 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
     }
 
   private def run(services: List[Service], commandRoles: Path, alarmConf: String): Unit = {
-    val servicesWithoutGateway = services.filterNot(_ == Gateway)
-    val eswTestKit: EswTestKit = new EswTestKit(servicesWithoutGateway: _*) {}
+    val servicesWithoutGatewayAndAgent = services.filterNot(x => x == Gateway || x == AgentService)
+    val eswTestKit: EswTestKit         = new EswTestKit(servicesWithoutGatewayAndAgent: _*) {}
 
     var gatewayWiring: Option[GatewayStub]                 = None
     var sequenceManagerWiring: Option[SequenceManagerStub] = None
+    var agentServiceWiring: Option[AgentServiceStub]       = None
+    val locationService: LocationService                   = eswTestKit.locationService
+    val actorSystem: ActorSystem[SpawnProtocol.Command]    = eswTestKit.actorSystem
 
     def shutdown(): Unit = {
       gatewayWiring.foreach(_.shutdownGateway())
       sequenceManagerWiring.foreach(_.shutdown())
+      agentServiceWiring.foreach(_.shutdown())
+      eswTestKit.shutdownAgent()
       eswTestKit.afterAll()
     }
 
     try {
-      import eswTestKit._
       LoggingSystemFactory.start(progName, "0.1.0-SNAPSHOT", Networks().hostname, actorSystem)
-      import frameworkTestKit.frameworkWiring.alarmServiceFactory
+      import eswTestKit.frameworkTestKit.frameworkWiring.alarmServiceFactory
 
       def initDefaultAlarms() = {
         val config            = ConfigFactory.parseResources(alarmConf)
-        val alarmAdminService = alarmServiceFactory.makeAdminApi(locationService)
+        val alarmAdminService = alarmServiceFactory.makeAdminApi(locationService)(actorSystem)
         alarmAdminService.initAlarms(config, reset = true).futureValue
       }
 
@@ -60,6 +67,11 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
         val sequenceManagerStub = new SequenceManagerStub(locationService, actorSystem)
         sequenceManagerWiring = Some(sequenceManagerStub)
         sequenceManagerStub.spawnMockSm()
+      }
+      if (services.contains(AgentService)) {
+        val agentServiceStub = new AgentServiceStub(locationService, actorSystem)
+        agentServiceWiring = Some(agentServiceStub)
+        agentServiceStub.spawnMockAgentService()
       }
       CoordinatedShutdown(actorSystem).addJvmShutdownHook(shutdown())
     }

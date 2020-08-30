@@ -7,7 +7,7 @@ import caseapp.core.argparser.SimpleArgParser
 import caseapp.{ExtraName, HelpMessage, _}
 import csw.testkit.scaladsl.CSWService._
 import esw.ocs.testkit.Service
-import esw.ocs.testkit.Service.{AAS, Gateway, SequenceManager}
+import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, MachineAgent, SequenceManager}
 import org.tmt.utils.IOUtils
 
 sealed trait TSServicesCommands
@@ -25,6 +25,7 @@ object TSServicesCommands {
       case "Gateway"          => Right(Gateway)
       case "AAS"              => Right(AAS)
       case "SequenceManager"  => Right(SequenceManager)
+      case "AgentService"     => Right(AgentService)
       case unknown            => Left(UnrecognizedArgument(unknown))
     }
 

@@ -2,7 +2,7 @@ package org.tmt
 
 import caseapp.RemainingArgs
 import csw.prefix.models.Subsystem
-import esw.http.core.commons.EswCommandApp
+import esw.commons.cli.EswCommandApp
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import org.tmt.TSSequencerCommands._

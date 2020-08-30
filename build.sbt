@@ -1,5 +1,5 @@
 import sbt.Keys.{libraryDependencies, resolvers}
-
+name := "backend-testkit"
 inThisBuild(
   Seq(
     scalaVersion := "2.13.2",
